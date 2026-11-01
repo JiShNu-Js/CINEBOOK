@@ -11,7 +11,9 @@ The project is structured specifically for a 5-member student group where each m
 2. [Technologies Used](#-technologies-used)
 3. [The Five Connected Webpages & Workflow](#-the-five-connected-webpages--workflow)
 4. [Project Directory Structure](#-project-directory-structure)
-5. [Prerequisites & Installation](#-prerequisites--installation)
+5. [Prerequisites & System Setup](#-prerequisites--system-setup)
+   * [Ubuntu / Debian Linux Setup](#-ubuntu--debian-linux-setup)
+   * [Windows 10 / 11 Setup](#-windows-10--11-setup)
 6. [Database Setup (MySQL)](#-database-setup-mysql)
 7. [Environment Configuration (.env)](#-environment-configuration-env)
 8. [Running the Application](#-running-the-application)
@@ -75,7 +77,7 @@ The project is structured specifically for a 5-member student group where each m
 | **Page 4: Seat Booking** | [`public/booking.html`](public/booking.html) | Member 4 | Interactive booking interface featuring dynamic theater selection, show date picker, showtime slots, and an interactive 5x8 cinema seat grid. Checks theater-specific seat occupancy, requires user login, and recalculates total price. |
 | **Page 5: Ticket Output** | [`public/confirmation.html`](public/confirmation.html) | Member 5 | Displays confirmed reservation details fetched from backend (`GET /api/booking/:id`). Shows movie, theater name, location, screen, seats, total amount, and renders a printable cinema ticket layout with `window.print()`. |
 
-> **Bonus / Module IV CRUD Page:** [`public/admin.html`](public/admin.html) allows administrators to Create, Read, Update, and Delete movies and monitor customer bookings with theater information.
+> **Bonus / Module IV CRUD Page:** [`public/admin.html`](public/admin.html) allows administrators to Create, Read, Update, and Delete movies and cinema theaters, as well as monitor customer bookings.
 
 ---
 
@@ -92,7 +94,7 @@ cinebook/
 │   ├── movies.js             # /api/movies, /api/movies/:id, booked seats
 │   ├── theaters.js           # /api/theaters, /api/theaters/:id
 │   ├── bookings.js           # /api/book, /api/my-bookings, /api/booking/:id
-│   └── admin.js              # /api/admin/movies (CRUD), /api/admin/bookings
+│   └── admin.js              # /api/admin/movies (CRUD), /api/admin/theaters, /api/admin/bookings
 ├── public/
 │   ├── index.html            # Gateway redirect to /movies.html
 │   ├── signup.html           # Page 1: User Registration
@@ -120,7 +122,7 @@ cinebook/
 │       ├── oppenheimer.svg   # Movie poster artwork
 │       └── dune2.svg         # Movie poster artwork
 ├── test/
-│   └── api.test.js           # Automated end-to-end API test suite (19 tests)
+│   └── api.test.js           # Automated end-to-end API test suite (22 tests)
 ├── database.sql              # MySQL DDL & seed data script
 ├── .env.example              # Environment variable template
 ├── .gitignore                # Node modules and secrets exclusion
@@ -133,38 +135,103 @@ cinebook/
 
 ---
 
-## 💻 Prerequisites & Installation
+## 💻 Prerequisites & System Setup
 
-1. **Install Node.js:** Download and install Node.js (version 18 or newer) from [nodejs.org](https://nodejs.org/).
-2. **Install MySQL:** Ensure MySQL Community Server or MariaDB is installed (XAMPP / WAMP / Standalone MySQL).
-3. **Clone or Extract the Project:**
+Ensure you have **Node.js (v18 or newer)** and **MySQL (v8.0 or MariaDB)** installed on your machine.
+
+### 🐧 Ubuntu / Debian Linux Setup
+
+1. **Install Node.js & npm:**
+   ```bash
+   sudo apt update
+   sudo apt install -y nodejs npm
+   # Verify installations:
+   node -v
+   npm -v
+   ```
+
+2. **Install & Start MySQL Server:**
+   ```bash
+   sudo apt install -y mysql-server
+   sudo systemctl start mysql
+   sudo systemctl enable mysql
+   ```
+
+3. **Clone or Extract Project Directory:**
    ```bash
    cd /path/to/CineBook
    ```
-4. **Install Dependencies:**
+
+4. **Install Node Dependencies:**
    ```bash
    npm install
+   ```
+
+5. **Configure Environment Variables:**
+   ```bash
+   cp .env.example .env
+   ```
+
+---
+
+### 🪟 Windows 10 / 11 Setup
+
+1. **Install Node.js:**
+   * Download and run the Windows Installer (LTS) from [nodejs.org](https://nodejs.org/).
+   * Or via Windows Package Manager (PowerShell / Command Prompt):
+     ```powershell
+     winget install OpenJS.NodeJS.LTS
+     ```
+   * Verify by opening a new Command Prompt:
+     ```cmd
+     node -v
+     npm -v
+     ```
+
+2. **Install MySQL Server:**
+   * Download and run the **MySQL Community Server** installer from [dev.mysql.com](https://dev.mysql.com/downloads/installer/) or install **XAMPP** / **WampServer**.
+   * Make sure the MySQL service is started (via Windows Services or XAMPP Control Panel).
+
+3. **Navigate to the Project Folder:**
+   ```cmd
+   cd C:\path\to\CineBook
+   ```
+
+4. **Install Node Dependencies:**
+   ```cmd
+   npm install
+   ```
+
+5. **Configure Environment Variables:**
+   ```cmd
+   copy .env.example .env
    ```
 
 ---
 
 ## 🗄 Database Setup (MySQL)
 
-1. Open your terminal, MySQL Command Line Client, or phpMyAdmin.
-2. Log in to MySQL:
-   ```bash
-   mysql -u root -p
-   ```
-3. Import the `database.sql` script:
-   ```sql
-   source /path/to/CineBook/database.sql;
-   ```
-   *Alternatively, in bash:*
-   ```bash
-   mysql -u root -p < database.sql
-   ```
+### Ubuntu / Linux:
+```bash
+mysql -u root -p < database.sql
+```
+*Or interactively from MySQL shell:*
+```sql
+mysql -u root -p
+mysql> source /path/to/CineBook/database.sql;
+```
 
-### Pre-seeded Theaters
+### Windows:
+*Using Command Prompt:*
+```cmd
+mysql -u root -p < database.sql
+```
+*Or using MySQL Workbench / phpMyAdmin:*
+1. Open phpMyAdmin (`http://localhost/phpmyadmin`) or MySQL Workbench.
+2. Click **Import** or **File -> Open SQL Script**.
+3. Select `database.sql` and click **Execute / Go**.
+
+### Pre-seeded Cinema Theaters
 1. **CineBook IMAX Laser** – Phoenix Palladium Mall, Downtown (`Audi 1 (IMAX Laser)`)
 2. **CineBook PVR Premiere** – Galaxy Galleria, West Avenue (`Audi 2 (Dolby Atmos)`)
 3. **CineBook Cinepolis 4DX** – Metroplex Plaza, City Center (`Audi 3 (4DX Dynamic)`)
@@ -176,23 +243,22 @@ cinebook/
 | **Regular User** | `rahul@cinebook.com` | `user123` |
 | **Administrator** | `admin@cinebook.com` | `admin123` |
 
+> **Offline Development Fallback:** `config/db.js` includes an intelligent auto-fallback layer. If MySQL is not running on localhost, the server will display an informative banner in the console and run using in-memory pre-seeded records so that you can develop, test, and present the project even on computers without an active MySQL service.
+
 ---
 
 ## ⚙️ Environment Configuration (.env)
 
-Duplicate `.env.example` to create `.env`:
-```bash
-cp .env.example .env
-```
-
-Review or modify your database credentials in `.env`:
+Edit `.env` to match your local database settings (if MySQL root user has a password):
 ```env
+# Server Configuration
 PORT=3000
 SESSION_SECRET=cinebook_secret_session_key_2026
 
+# MySQL Database Configuration
 DB_HOST=localhost
 DB_USER=root
-DB_PASSWORD=
+DB_PASSWORD=your_mysql_password
 DB_NAME=cinebook
 DB_PORT=3306
 ```
@@ -201,11 +267,11 @@ DB_PORT=3306
 
 ## 🚀 Running the Application
 
-Start the web server:
+### Start Server
 ```bash
 npm start
 ```
-*Or for automatic restart during code changes:*
+*Or with hot-reload during development:*
 ```bash
 npm run dev
 ```
@@ -221,7 +287,7 @@ Open your web browser and visit:
 
 ## 🧪 Automated Testing
 
-To run the built-in automated test suite verifying all 19 backend endpoints, theater selection, theater-specific conflict detection, and security policies:
+To run the built-in automated test suite verifying all 22 backend endpoints, theater selection, theater-specific conflict detection, and security policies:
 ```bash
 npm test
 ```
@@ -246,9 +312,12 @@ Expected result:
   ✅ PASS: Admin CRUD: CREATE Movie (POST /api/admin/movies)
   ✅ PASS: Admin CRUD: UPDATE Movie (PUT /api/admin/movies/:id)
   ✅ PASS: Admin CRUD: DELETE Movie (DELETE /api/admin/movies/:id)
+  ✅ PASS: Admin CRUD: CREATE Theater (POST /api/admin/theaters)
+  ✅ PASS: Dynamic Theater Availability (Admin-added theater is immediately returned in /api/theaters)
+  ✅ PASS: Admin CRUD: DELETE Theater (DELETE /api/admin/theaters/:id)
   ✅ PASS: User Session Termination (POST /api/logout)
 
-📊 Test Results: 19 Passed, 0 Failed
+📊 Test Results: 22 Passed, 0 Failed
 ```
 
 ---
@@ -290,6 +359,9 @@ Expected result:
 | `POST` | `/api/admin/movies` | Create new movie in database | Admin Only |
 | `PUT` | `/api/admin/movies/:id` | Update movie details | Admin Only |
 | `DELETE` | `/api/admin/movies/:id` | Delete movie and related records | Admin Only |
+| `GET` | `/api/admin/theaters` | List all cinema theaters | Admin Only |
+| `POST` | `/api/admin/theaters` | Add new cinema theater to catalog | Admin Only |
+| `DELETE` | `/api/admin/theaters/:id` | Delete theater from catalog | Admin Only |
 | `GET` | `/api/admin/bookings` | View all customer bookings with theater names | Admin Only |
 
 ---
