@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+  <defs>
+    <linearGradient id="spaceBg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#020617" />
+      <stop offset="40%" stop-color="#0B132B" />
+      <stop offset="70%" stop-color="#1C2541" />
+      <stop offset="100%" stop-color="#0B0914" />
+    </linearGradient>
+    <radialGradient id="wormhole" cx="50%" cy="40%" r="50%">
+      <stop offset="0%" stop-color="#FFFFFF" />
+      <stop offset="25%" stop-color="#FDE047" />
+      <stop offset="50%" stop-color="#EA580C" />
+      <stop offset="75%" stop-color="#3B82F6" stop-opacity="0.3" />
+      <stop offset="100%" stop-color="#020617" stop-opacity="0" />
+    </radialGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#spaceBg)" rx="16" />
+
+  <!-- Stars -->
+  <g fill="#FFFFFF" opacity="0.6">
+    <circle cx="50" cy="80" r="1.5" /><circle cx="120" cy="40" r="1" /><circle cx="340" cy="90" r="2" />
+    <circle cx="80" cy="180" r="1.2" /><circle cx="310" cy="220" r="1" /><circle cx="270" cy="60" r="1.8" />
+    <circle cx="30" cy="300" r="1.5" /><circle cx="360" cy="320" r="1.2" />
+  </g>
+
+  <!-- Black hole / Gargantua accretion disk -->
+  <ellipse cx="200" cy="200" rx="140" ry="140" fill="url(#wormhole)" />
+  <circle cx="200" cy="200" r="45" fill="#020617" />
+  <!-- Gravitational lens ring -->
+  <ellipse cx="200" cy="200" rx="130" ry="25" fill="none" stroke="#FDE047" stroke-width="4" opacity="0.8" />
+  
+  <!-- Endurance Spaceship Ring -->
+  <g transform="translate(200, 260) scale(0.6)">
+    <circle cx="0" cy="0" r="50" stroke="#E2E8F0" stroke-width="6" fill="none" stroke-dasharray="16 10" />
+    <circle cx="0" cy="0" r="12" fill="#E2E8F0" />
+  </g>
+
+  <!-- Genre Tag -->
+  <rect x="130" y="340" width="140" height="26" rx="13" fill="#E50914" opacity="0.9" />
+  <text x="200" y="357" font-family="'Poppins', sans-serif" font-weight="700" font-size="11" fill="#FFFFFF" text-anchor="middle" letter-spacing="1.5">SCI-FI / ADVENTURE</text>
+
+  <!-- Title & Details -->
+  <text x="200" y="420" font-family="'Poppins', sans-serif" font-weight="900" font-size="30" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">INTERSTELLAR</text>
+  <text x="200" y="445" font-family="'Poppins', sans-serif" font-weight="500" font-size="12" fill="#94A3B8" text-anchor="middle" letter-spacing="2">MANKIND WAS NOT MEANT TO DIE HERE</text>
+
+  <!-- Rating & Duration -->
+  <g transform="translate(130, 485)">
+    <text x="0" y="0" font-family="'Poppins', sans-serif" font-size="13" fill="url(#gold)" font-weight="700">★ 8.7 / 10</text>
+    <text x="140" y="0" font-family="'Poppins', sans-serif" font-size="13" fill="#CBD5E1" font-weight="500">⏱ 169 MIN</text>
+  </g>
+
+  <!-- Ticket Price Tag -->
+  <rect x="50" y="525" width="300" height="42" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+  <text x="200" y="551" font-family="'Poppins', sans-serif" font-weight="700" font-size="15" fill="#F8FAFC" text-anchor="middle">
+    TICKETS FROM <tspan fill="#F59E0B">₹280.00</tspan>
+  </text>
+</svg>

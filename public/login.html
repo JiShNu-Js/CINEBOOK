@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Log In - CineBook</title>
+    <!-- Favicon & Stylesheet -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Header & Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/movies.html" class="brand-logo">
+                <img src="/images/logo.svg" alt="CineBook Logo">
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/movies.html">Movies</a></li>
+                    <li><a href="/admin.html" id="nav-admin-link" style="display: none;">Admin Panel</a></li>
+                </ul>
+            </nav>
+            <div id="nav-auth-container" class="nav-auth-group">
+                <a href="/login.html" class="btn btn-outline btn-sm active">Log In</a>
+                <a href="/signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Login Form (Member 2 Responsibility) -->
+    <main class="main-content">
+        <div class="auth-wrapper">
+            <div class="auth-card">
+                <div class="auth-header">
+                    <h2>Welcome Back</h2>
+                    <p>Log in to access your CineBook tickets and reservations.</p>
+                </div>
+
+                <!-- Alert feedback container -->
+                <div id="login-alert"></div>
+
+                <!-- Login Form -->
+                <form id="login-form" novalidate>
+                    <div class="form-group">
+                        <label for="email">Email Address</label>
+                        <input 
+                            type="email" 
+                            id="email" 
+                            name="email" 
+                            class="form-control" 
+                            placeholder="e.g. rahul@cinebook.com" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label for="password">Password</label>
+                        <input 
+                            type="password" 
+                            id="password" 
+                            name="password" 
+                            class="form-control" 
+                            placeholder="Enter your password" 
+                            required
+                        >
+                    </div>
+
+                    <button type="submit" id="btn-submit-login" class="btn btn-primary btn-block">
+                        Log In
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    Don't have an account yet? <a href="/signup.html">Sign Up here</a>
+                </div>
+
+                <!-- Quick Seed Credentials Note for Viva / Testing -->
+                <div style="margin-top: 1.5rem; padding: 0.8rem; background: rgba(255,255,255,0.03); border-radius: 6px; font-size: 0.78rem; color: #94a3b8; border: 1px dashed #243049;">
+                    <strong style="color: #f59e0b;">Demo Accounts:</strong><br>
+                    • User: <code>rahul@cinebook.com</code> / <code>user123</code><br>
+                    • Admin: <code>admin@cinebook.com</code> / <code>admin123</code>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="/images/logo.svg" alt="CineBook" style="height: 32px; margin-bottom: 0.5rem;">
+                <p>CineBook is an academic movie ticket booking web platform developed for Internet Programming (B.Tech 2nd Year).</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/movies.html">All Movies</a></li>
+                    <li><a href="/login.html">Login</a></li>
+                    <li><a href="/signup.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Tech Stack</h4>
+                <ul>
+                    <li>HTML5 & CSS3</li>
+                    <li>Vanilla JavaScript</li>
+                    <li>Node.js & Express</li>
+                    <li>MySQL Database</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 CineBook Project Group. Designed for B.Tech Internet Programming Course.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    <script src="/js/login.js"></script>
+</body>
+</html>

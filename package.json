@@ -1,0 +1,29 @@
+{
+  "name": "cinebook",
+  "version": "1.0.0",
+  "description": "CineBook - Movie Ticket Booking Website for B.Tech Internet Programming Course",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "dev": "node --watch server.js",
+    "test": "node test/api.test.js"
+  },
+  "keywords": [
+    "cinebook",
+    "movie-ticket-booking",
+    "internet-programming",
+    "express",
+    "mysql",
+    "nodejs"
+  ],
+  "author": "CineBook Student Team",
+  "license": "ISC",
+  "dependencies": {
+    "bcryptjs": "^3.0.3",
+    "docx": "^9.5.1",
+    "dotenv": "^17.2.4",
+    "express": "^5.2.1",
+    "express-session": "^1.19.0",
+    "mysql2": "^3.17.2"
+  }
+}

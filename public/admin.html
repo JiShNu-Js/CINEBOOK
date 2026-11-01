@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - CineBook</title>
+    <!-- Favicon & Stylesheet -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Header & Navigation Bar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/movies.html" class="brand-logo">
+                <img src="/images/logo.svg" alt="CineBook Logo">
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/movies.html">Movies</a></li>
+                    <li><a href="/booking.html">Book Ticket</a></li>
+                    <li><a href="/admin.html" class="active">Admin Panel</a></li>
+                </ul>
+            </nav>
+            <div id="nav-auth-container" class="nav-auth-group">
+                <!-- Managed dynamically via common.js -->
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Admin CRUD Panel -->
+    <main class="main-content">
+        <!-- Access Protection Notice (Shown if user is not an admin) -->
+        <div id="admin-access-warning" style="display: none;">
+            <div class="alert alert-danger" style="margin-bottom: 2rem;">
+                <strong>Access Restricted:</strong> Administrator privileges are required to access this management dashboard. Please log in with an administrator account (e.g. <code>admin@cinebook.com</code> / <code>admin123</code>).
+            </div>
+            <a href="/login.html" class="btn btn-primary">Go to Login</a>
+        </div>
+
+        <div id="admin-main-section">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 2rem; flex-wrap: wrap; gap: 1rem;">
+                <div>
+                    <h1 style="font-size: 2rem; font-weight: 800;">Cinema Admin Panel</h1>
+                    <p style="color: var(--text-muted); font-size: 0.95rem;">
+                        Manage cinema movies (Module IV CRUD) and monitor user ticket bookings.
+                    </p>
+                </div>
+                <button type="button" id="btn-open-add-modal" class="btn btn-primary">
+                    ➕ Add New Movie
+                </button>
+            </div>
+
+            <!-- Feedback Alert -->
+            <div id="admin-alert"></div>
+
+            <!-- Movies Management Section (CRUD) -->
+            <h2 class="section-title">Movie Catalog Management</h2>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Poster</th>
+                            <th>Title</th>
+                            <th>Genre</th>
+                            <th>Duration</th>
+                            <th>Price</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="movies-table-body">
+                        <!-- Populated dynamically via admin.js -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- System Bookings Monitor Section -->
+            <h2 class="section-title" style="margin-top: 3rem;">All Customer Bookings</h2>
+            <div class="admin-table-wrapper">
+                <table class="admin-table">
+                    <thead>
+                        <tr>
+                            <th>Ref ID</th>
+                            <th>Customer</th>
+                            <th>Movie</th>
+                            <th>Date & Time</th>
+                            <th>Seats</th>
+                            <th>Amount</th>
+                        </tr>
+                    </thead>
+                    <tbody id="bookings-table-body">
+                        <!-- Populated dynamically via admin.js -->
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <!-- Add / Edit Movie Modal Form -->
+    <div class="modal-overlay" id="movie-modal">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3 id="modal-title">Add New Movie</h3>
+                <button type="button" class="btn-close" id="btn-close-modal">&times;</button>
+            </div>
+            <form id="movie-crud-form">
+                <input type="hidden" id="crud-movie-id">
+
+                <div class="form-group">
+                    <label for="crud-title">Movie Title</label>
+                    <input type="text" id="crud-title" class="form-control" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="crud-genre">Genre</label>
+                    <input type="text" id="crud-genre" class="form-control" placeholder="e.g. Action / Thriller" required>
+                </div>
+
+                <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 1rem;">
+                    <div class="form-group">
+                        <label for="crud-duration">Duration (Minutes)</label>
+                        <input type="number" id="crud-duration" class="form-control" min="30" max="360" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="crud-price">Price (₹)</label>
+                        <input type="number" id="crud-price" step="0.01" class="form-control" min="50" required>
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label for="crud-poster">Poster URL / Path</label>
+                    <input type="text" id="crud-poster" class="form-control" value="/images/inception.svg" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="crud-description">Description / Synopsis</label>
+                    <textarea id="crud-description" class="form-control" rows="3"></textarea>
+                </div>
+
+                <div style="display: flex; justify-content: flex-end; gap: 0.8rem; margin-top: 1.5rem;">
+                    <button type="button" class="btn btn-secondary" id="btn-cancel-modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary" id="btn-save-movie">Save Movie</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="/images/logo.svg" alt="CineBook" style="height: 32px; margin-bottom: 0.5rem;">
+                <p>CineBook is an academic movie ticket booking web platform developed for Internet Programming (B.Tech 2nd Year).</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/movies.html">All Movies</a></li>
+                    <li><a href="/login.html">Login</a></li>
+                    <li><a href="/signup.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Tech Stack</h4>
+                <ul>
+                    <li>HTML5 & CSS3</li>
+                    <li>Vanilla JavaScript</li>
+                    <li>Node.js & Express</li>
+                    <li>MySQL Database</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 CineBook Project Group. Designed for B.Tech Internet Programming Course.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    <script src="/js/admin.js"></script>
+</body>
+</html>

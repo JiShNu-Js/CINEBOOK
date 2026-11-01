@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Booking Confirmation - CineBook</title>
+    <!-- Favicon & Stylesheet -->
+    <link rel="icon" type="image/svg+xml" href="/images/logo.svg">
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+
+    <!-- Header & Navigation Bar (Hidden during print) -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="/movies.html" class="brand-logo">
+                <img src="/images/logo.svg" alt="CineBook Logo">
+            </a>
+            <nav>
+                <ul class="nav-links">
+                    <li><a href="/movies.html">Movies</a></li>
+                    <li><a href="/booking.html">Book Ticket</a></li>
+                    <li><a href="/admin.html" id="nav-admin-link" style="display: none;">Admin Panel</a></li>
+                </ul>
+            </nav>
+            <div id="nav-auth-container" class="nav-auth-group">
+                <a href="/login.html" class="btn btn-outline btn-sm">Log In</a>
+                <a href="/signup.html" class="btn btn-primary btn-sm">Sign Up</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Area: Booking Confirmation & Ticket (Member 5 Responsibility) -->
+    <main class="main-content">
+        <div class="confirmation-container">
+            <!-- Alert container for error handling -->
+            <div id="confirmation-alert"></div>
+
+            <!-- Success Header -->
+            <div class="success-header" id="success-header-block">
+                <div class="success-icon-badge">✓</div>
+                <h1 style="font-size: 2.2rem; font-weight: 800; margin-bottom: 0.5rem;">Booking Confirmed!</h1>
+                <p style="color: var(--text-muted); font-size: 1rem;">
+                    Your cinema seats have been successfully reserved in the database.
+                </p>
+            </div>
+
+            <!-- Loading Spinner Placeholder -->
+            <div id="ticket-loading" style="text-align: center; padding: 3rem; color: #94a3b8;">
+                <div style="font-size: 2rem; margin-bottom: 1rem;">🎟️</div>
+                <p>Retrieving your confirmed ticket from the database...</p>
+            </div>
+
+            <!-- Printable Cinema Ticket Card (Rendered via JS) -->
+            <div class="ticket-wrapper" id="ticket-card" style="display: none;">
+                <!-- Ticket Top Header -->
+                <div class="ticket-header">
+                    <div class="ticket-brand">🎬 CINEBOOK CINEMAS</div>
+                    <div class="ticket-id" id="ticket-ref-id">REF: #000000</div>
+                </div>
+
+                <!-- Ticket Main Body -->
+                <div class="ticket-body">
+                    <div class="ticket-thumb">
+                        <img id="ticket-poster" src="/images/inception.svg" alt="Movie Poster">
+                    </div>
+                    <div class="ticket-info">
+                        <h3 id="ticket-movie-title">Movie Title</h3>
+                        <p id="ticket-movie-genre" style="color: var(--accent-gold); font-size: 0.85rem; font-weight: 600;">Sci-Fi / Thriller</p>
+
+                        <div class="ticket-info-grid">
+                            <div class="ticket-info-item">
+                                <span>Customer Name</span>
+                                <strong id="ticket-customer-name">--</strong>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span>Show Date</span>
+                                <strong id="ticket-date">--</strong>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span>Show Time</span>
+                                <strong id="ticket-time">--</strong>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span>Reserved Seats</span>
+                                <strong id="ticket-seats" style="color: var(--primary-red);">--</strong>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span>Quantity</span>
+                                <strong id="ticket-count">--</strong>
+                            </div>
+                            <div class="ticket-info-item">
+                                <span>Screen & Hall</span>
+                                <strong>AUDI 02 (Dolby Atmos)</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Perforation Line -->
+                <div class="ticket-perforation"></div>
+
+                <!-- Ticket Footer with Barcode -->
+                <div class="ticket-footer">
+                    <div class="ticket-barcode">
+                        <div class="simulated-barcode"></div>
+                        <div class="barcode-digits" id="ticket-barcode-num">CB-2026-9481-9921</div>
+                    </div>
+                    <div class="ticket-price-badge">
+                        <span>Total Paid</span>
+                        <h4 id="ticket-total-price">₹0.00</h4>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Action Buttons (Hidden during Print) -->
+            <div class="ticket-actions" id="ticket-actions-group" style="display: none;">
+                <button type="button" id="btn-print-ticket" class="btn btn-gold">
+                    🖨️ Print Ticket
+                </button>
+                <a href="/movies.html" class="btn btn-outline">
+                    🍿 Book Another Movie
+                </a>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer (Hidden during print) -->
+    <footer class="footer">
+        <div class="footer-container">
+            <div class="footer-brand">
+                <img src="/images/logo.svg" alt="CineBook" style="height: 32px; margin-bottom: 0.5rem;">
+                <p>CineBook is an academic movie ticket booking web platform developed for Internet Programming (B.Tech 2nd Year).</p>
+            </div>
+            <div class="footer-col">
+                <h4>Quick Links</h4>
+                <ul>
+                    <li><a href="/movies.html">All Movies</a></li>
+                    <li><a href="/login.html">Login</a></li>
+                    <li><a href="/signup.html">Register</a></li>
+                </ul>
+            </div>
+            <div class="footer-col">
+                <h4>Tech Stack</h4>
+                <ul>
+                    <li>HTML5 & CSS3</li>
+                    <li>Vanilla JavaScript</li>
+                    <li>Node.js & Express</li>
+                    <li>MySQL Database</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            &copy; 2026 CineBook Project Group. Designed for B.Tech Internet Programming Course.
+        </div>
+    </footer>
+
+    <!-- Scripts -->
+    <script src="/js/common.js"></script>
+    <script src="/js/confirmation.js"></script>
+</body>
+</html>

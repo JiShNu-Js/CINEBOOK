@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 600" width="400" height="600">
+  <defs>
+    <linearGradient id="bg" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0F172A" />
+      <stop offset="40%" stop-color="#1E293B" />
+      <stop offset="70%" stop-color="#090D16" />
+      <stop offset="100%" stop-color="#030712" />
+    </linearGradient>
+    <linearGradient id="mazeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38BDF8" stop-opacity="0.6" />
+      <stop offset="100%" stop-color="#0284C7" stop-opacity="0.1" />
+    </linearGradient>
+    <linearGradient id="gold" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#bg)" rx="16" />
+  
+  <!-- Architectural surreal lines (Dream layers) -->
+  <g opacity="0.35">
+    <circle cx="200" cy="220" r="160" stroke="#38BDF8" stroke-width="2" fill="none" stroke-dasharray="8 6" />
+    <circle cx="200" cy="220" r="120" stroke="#38BDF8" stroke-width="2" fill="none" />
+    <circle cx="200" cy="220" r="80" stroke="#38BDF8" stroke-width="2.5" fill="none" stroke-dasharray="14 8" />
+    <circle cx="200" cy="220" r="40" stroke="#38BDF8" stroke-width="3" fill="none" />
+    <line x1="200" y1="60" x2="200" y2="380" stroke="#38BDF8" stroke-width="1.5" />
+    <line x1="40" y1="220" x2="360" y2="220" stroke="#38BDF8" stroke-width="1.5" />
+    <line x1="86" y1="106" x2="314" y2="334" stroke="#38BDF8" stroke-width="1.5" />
+    <line x1="86" y1="334" x2="314" y2="106" stroke="#38BDF8" stroke-width="1.5" />
+  </g>
+
+  <!-- Spinning Totem Icon -->
+  <g transform="translate(200, 220)">
+    <polygon points="0,-45 18,-15 28,5 0,38 -28,5 -18,-15" fill="#E2E8F0" />
+    <polygon points="0,-45 0,38 28,5 18,-15" fill="#94A3B8" />
+    <ellipse cx="0" cy="40" rx="32" ry="7" fill="#000000" opacity="0.5" />
+  </g>
+
+  <!-- Genre Tag -->
+  <rect x="140" y="340" width="120" height="26" rx="13" fill="#E50914" opacity="0.9" />
+  <text x="200" y="357" font-family="'Poppins', sans-serif" font-weight="700" font-size="11" fill="#FFFFFF" text-anchor="middle" letter-spacing="1.5">SCI-FI / THRILLER</text>
+
+  <!-- Title & Details -->
+  <text x="200" y="420" font-family="'Poppins', sans-serif" font-weight="900" font-size="34" fill="#FFFFFF" text-anchor="middle" letter-spacing="4">INCEPTION</text>
+  <text x="200" y="445" font-family="'Poppins', sans-serif" font-weight="500" font-size="12" fill="#94A3B8" text-anchor="middle" letter-spacing="2">YOUR MIND IS THE SCENE OF THE CRIME</text>
+
+  <!-- Rating & Duration -->
+  <g transform="translate(130, 485)">
+    <text x="0" y="0" font-family="'Poppins', sans-serif" font-size="13" fill="url(#gold)" font-weight="700">★ 8.8 / 10</text>
+    <text x="140" y="0" font-family="'Poppins', sans-serif" font-size="13" fill="#CBD5E1" font-weight="500">⏱ 148 MIN</text>
+  </g>
+
+  <!-- Ticket Price Tag -->
+  <rect x="50" y="525" width="300" height="42" rx="8" fill="#1E293B" stroke="#334155" stroke-width="1" />
+  <text x="200" y="551" font-family="'Poppins', sans-serif" font-weight="700" font-size="15" fill="#F8FAFC" text-anchor="middle">
+    TICKETS FROM <tspan fill="#F59E0B">₹250.00</tspan>
+  </text>
+</svg>

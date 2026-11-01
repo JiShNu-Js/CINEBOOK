@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 240 60" width="240" height="60">
+  <defs>
+    <linearGradient id="logoGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#E50914" />
+      <stop offset="100%" stop-color="#B20710" />
+    </linearGradient>
+    <linearGradient id="goldGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#F59E0B" />
+      <stop offset="100%" stop-color="#FBBF24" />
+    </linearGradient>
+  </defs>
+  <!-- Cinema Clapperboard / Ticket Icon -->
+  <g transform="translate(10, 8)">
+    <rect x="0" y="4" width="40" height="36" rx="6" fill="url(#logoGrad)" />
+    <!-- Clapper stripes -->
+    <path d="M 4,4 L 12,4 L 8,14 L 0,14 Z" fill="#ffffff" opacity="0.9" />
+    <path d="M 16,4 L 24,4 L 20,14 L 12,14 Z" fill="#ffffff" opacity="0.9" />
+    <path d="M 28,4 L 36,4 L 32,14 L 24,14 Z" fill="#ffffff" opacity="0.9" />
+    <!-- Star icon -->
+    <polygon points="20,19 22.5,25.5 29,26 24,30.5 25.5,37 20,33.5 14.5,37 16,30.5 11,26 17.5,25.5" fill="url(#goldGrad)" />
+  </g>
+  <!-- Brand Text -->
+  <text x="60" y="38" font-family="'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif" font-weight="900" font-size="28" fill="#FFFFFF" letter-spacing="0.5">
+    CINE<tspan fill="url(#logoGrad)">BOOK</tspan>
+  </text>
+  <text x="62" y="49" font-family="'Poppins', sans-serif" font-weight="500" font-size="9" fill="#9CA3AF" letter-spacing="2">
+    PREMIUM CINEMA
+  </text>
+</svg>
