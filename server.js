@@ -53,6 +53,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 app.use('/api', authRoutes);
 app.use('/api/movies', movieRoutes);
 app.use('/api/theaters', theaterRoutes);
+app.use('/api/theater', theaterRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 
