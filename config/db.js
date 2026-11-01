@@ -306,6 +306,31 @@ async function query(sql, params = []) {
         return [[...memoryStore.theaters]];
     }
 
+    // 8c. Admin: INSERT INTO theaters
+    if (/INSERT\s+INTO\s+theaters/i.test(normalized)) {
+        const [theater_name, location, screen_name] = params;
+        const newTheater = {
+            theater_id: memoryStore.nextTheaterId++,
+            theater_name: theater_name.trim(),
+            location: location.trim(),
+            screen_name: screen_name.trim(),
+            created_at: new Date()
+        };
+        memoryStore.theaters.push(newTheater);
+        return [{ insertId: newTheater.theater_id, affectedRows: 1 }];
+    }
+
+    // 8d. Admin: DELETE FROM theaters WHERE theater_id = ?
+    if (/DELETE\s+FROM\s+theaters\s+WHERE\s+theater_id\s*=\s*\?/i.test(normalized)) {
+        const id = parseInt(params[0]);
+        const index = memoryStore.theaters.findIndex(t => t.theater_id === id);
+        if (index !== -1) {
+            memoryStore.theaters.splice(index, 1);
+            return [{ affectedRows: 1 }];
+        }
+        return [{ affectedRows: 0 }];
+    }
+
     // 9. Check booked seats for movie, theater, date, time
     // SELECT seats FROM bookings WHERE movie_id = ? AND theater_id = ? AND show_date = ? AND show_time = ?
     if (/SELECT seats FROM bookings WHERE movie_id = \? AND theater_id = \? AND show_date = \? AND show_time = \?/i.test(normalized)) {

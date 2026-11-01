@@ -8,13 +8,24 @@ document.addEventListener('DOMContentLoaded', async () => {
     const mainSection = document.getElementById('admin-main-section');
     const accessWarning = document.getElementById('admin-access-warning');
     const moviesTableBody = document.getElementById('movies-table-body');
+    const theatersTableBody = document.getElementById('theaters-table-body');
     const bookingsTableBody = document.getElementById('bookings-table-body');
     const openAddModalBtn = document.getElementById('btn-open-add-modal');
+    const openAddTheaterModalBtn = document.getElementById('btn-open-add-theater-modal');
     const modalOverlay = document.getElementById('movie-modal');
+    const theaterModalOverlay = document.getElementById('theater-modal');
     const closeModalBtn = document.getElementById('btn-close-modal');
     const cancelModalBtn = document.getElementById('btn-cancel-modal');
+    const closeTheaterModalBtn = document.getElementById('btn-close-theater-modal');
+    const cancelTheaterModalBtn = document.getElementById('btn-cancel-theater-modal');
     const crudForm = document.getElementById('movie-crud-form');
+    const theaterForm = document.getElementById('theater-crud-form');
     const modalTitle = document.getElementById('modal-title');
+
+    // Theater inputs
+    const theaterNameInput = document.getElementById('theater-name-input');
+    const theaterLocationInput = document.getElementById('theater-location-input');
+    const theaterScreenInput = document.getElementById('theater-screen-input');
 
     // Form inputs
     const movieIdInput = document.getElementById('crud-movie-id');
@@ -26,6 +37,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     const descriptionInput = document.getElementById('crud-description');
 
     let allMovies = [];
+    let allTheaters = [];
 
     /**
      * 1. Check Administrator Access
@@ -268,10 +280,141 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    /**
+     * 7. READ: Fetch and Render All Theaters
+     */
+    async function loadAdminTheaters() {
+        try {
+            const res = await fetch('/api/theaters');
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                allTheaters = data.theaters;
+                renderTheatersTable(allTheaters);
+            }
+        } catch (err) {
+            console.error('[Admin Load Theaters Error]:', err);
+        }
+    }
+
+    function renderTheatersTable(theaters) {
+        theatersTableBody.innerHTML = '';
+
+        if (!theaters || theaters.length === 0) {
+            theatersTableBody.innerHTML = '<tr><td colspan="5" style="text-align: center; color: #64748b; padding: 2rem;">No theaters registered yet.</td></tr>';
+            return;
+        }
+
+        theaters.forEach((t) => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td><code>#${t.theater_id}</code></td>
+                <td><strong>${CineBook.escapeHtml(t.theater_name)}</strong></td>
+                <td>${CineBook.escapeHtml(t.location)}</td>
+                <td><span style="color: var(--accent-gold); font-weight: 600;">${CineBook.escapeHtml(t.screen_name)}</span></td>
+                <td>
+                    <button class="btn btn-outline btn-sm btn-delete-theater" data-id="${t.theater_id}" style="color: var(--error-red); border-color: rgba(239,68,68,0.4);">🗑️ Delete</button>
+                </td>
+            `;
+            theatersTableBody.appendChild(tr);
+        });
+
+        // Bind delete theater buttons
+        document.querySelectorAll('.btn-delete-theater').forEach((btn) => {
+            btn.addEventListener('click', () => deleteTheater(parseInt(btn.dataset.id)));
+        });
+    }
+
+    /**
+     * 8. Theater Modal Handlers
+     */
+    function openTheaterModal() {
+        theaterModalOverlay.classList.add('open');
+        theaterForm.reset();
+    }
+
+    function closeTheaterModal() {
+        theaterModalOverlay.classList.remove('open');
+        theaterForm.reset();
+    }
+
+    if (openAddTheaterModalBtn) openAddTheaterModalBtn.addEventListener('click', openTheaterModal);
+    if (closeTheaterModalBtn) closeTheaterModalBtn.addEventListener('click', closeTheaterModal);
+    if (cancelTheaterModalBtn) cancelTheaterModalBtn.addEventListener('click', closeTheaterModal);
+
+    /**
+     * 9. CREATE: Add Theater Form Submit
+     */
+    if (theaterForm) {
+        theaterForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            CineBook.clearAlert('admin-alert');
+
+            const payload = {
+                theater_name: theaterNameInput.value.trim(),
+                location: theaterLocationInput.value.trim(),
+                screen_name: theaterScreenInput.value.trim()
+            };
+
+            try {
+                const res = await fetch('/api/admin/theaters', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+
+                if (res.ok && data.success) {
+                    closeTheaterModal();
+                    CineBook.showAlert('admin-alert', data.message || 'Theater added successfully! It is now available on the booking page.', 'success');
+                    loadAdminTheaters();
+                } else {
+                    alert(data.message || 'Error adding theater.');
+                }
+            } catch (err) {
+                console.error('[Add Theater Error]:', err);
+                alert('Failed to connect to the server.');
+            }
+        });
+    }
+
+    /**
+     * 10. DELETE: Remove Theater
+     */
+    async function deleteTheater(id) {
+        const theater = allTheaters.find((t) => t.theater_id === id);
+        const name = theater ? theater.theater_name : `Theater #${id}`;
+
+        if (!confirm(`Are you sure you want to delete "${name}"? This will also remove any bookings at this venue.`)) {
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/admin/theaters/${id}`, {
+                method: 'DELETE'
+            });
+
+            const data = await res.json();
+
+            if (res.ok && data.success) {
+                CineBook.showAlert('admin-alert', data.message || 'Theater deleted successfully.', 'success');
+                loadAdminTheaters();
+                loadAdminBookings();
+            } else {
+                CineBook.showAlert('admin-alert', data.message || 'Failed to delete theater.', 'danger');
+            }
+        } catch (err) {
+            console.error('[Delete Theater Error]:', err);
+            CineBook.showAlert('admin-alert', 'Server error while deleting theater.', 'danger');
+        }
+    }
+
     // Initialize admin page if authorized
     const hasAdminAccess = await checkAdminAuth();
     if (hasAdminAccess) {
         await loadAdminMovies();
+        await loadAdminTheaters();
         await loadAdminBookings();
     }
 });

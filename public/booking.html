@@ -52,11 +52,23 @@
                         </select>
                     </div>
 
-                    <!-- Theater Selection Dropdown -->
+                    <!-- Theater Selection Section (Cards + Dropdown) -->
                     <div class="form-group">
-                        <label for="theater-select">Choose Cinema Theater</label>
-                        <select id="theater-select" class="form-control" required>
-                            <option value="">-- Select Cinema Theater --</option>
+                        <label for="theater-select" style="display: flex; justify-content: space-between; align-items: center;">
+                            <span>Choose Cinema Theater</span>
+                            <span id="theaters-count-badge" style="font-size: 0.8rem; color: var(--text-dim);"></span>
+                        </label>
+
+                        <!-- Dynamic Theater Cards Grid -->
+                        <div id="theaters-grid-container" class="theaters-grid">
+                            <div class="theater-loading">
+                                <span>🏛️</span> Loading available cinema theaters...
+                            </div>
+                        </div>
+
+                        <!-- Dropdown selection (synchronized with cards) -->
+                        <select id="theater-select" class="form-control" style="margin-top: 0.5rem;" required>
+                            <option value="">-- Or Choose From Dropdown --</option>
                         </select>
                         <div id="theater-badge-info" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-gold); display: none;">
                             📍 <span id="theater-info-location"></span> • 🎬 <span id="theater-info-screen"></span>

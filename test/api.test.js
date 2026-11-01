@@ -288,7 +288,27 @@ async function runTests() {
         assert(deleteMovieRes.status === 200, 'Admin CRUD: DELETE Movie (DELETE /api/admin/movies/:id)');
 
         // -------------------------------------------------------------
-        // TEST 17: User Logout (POST /api/logout)
+        // TEST 17: Admin CRUD Theaters & Dynamic Visibility on Booking
+        // -------------------------------------------------------------
+        const addTheaterRes = await request('POST', '/api/admin/theaters', {
+            theater_name: 'CineBook INOX Marina',
+            location: 'Marina Beach Road, East Bay',
+            screen_name: 'Audi 5 (Dolby 7.1)'
+        }, adminCookie);
+        const createdTheaterId = addTheaterRes.body.theaterId;
+        assert(addTheaterRes.status === 201 && createdTheaterId, 'Admin CRUD: CREATE Theater (POST /api/admin/theaters)');
+
+        // Verify newly added theater appears immediately in GET /api/theaters
+        const checkTheatersRes = await request('GET', '/api/theaters');
+        const foundNewTheater = checkTheatersRes.body.theaters.some(t => t.theater_id === createdTheaterId);
+        assert(foundNewTheater, 'Dynamic Theater Availability (Admin-added theater is immediately returned in /api/theaters)');
+
+        // Admin DELETE Theater
+        const deleteTheaterRes = await request('DELETE', `/api/admin/theaters/${createdTheaterId}`, null, adminCookie);
+        assert(deleteTheaterRes.status === 200, 'Admin CRUD: DELETE Theater (DELETE /api/admin/theaters/:id)');
+
+        // -------------------------------------------------------------
+        // TEST 18: User Logout (POST /api/logout)
         // -------------------------------------------------------------
         const logoutRes = await request('POST', '/api/logout', null, userCookie);
         const checkAfterLogout = await request('GET', '/api/me', null, userCookie);

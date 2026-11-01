@@ -22,6 +22,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     // DOM Elements
     const movieSelect = document.getElementById('movie-select');
     const theaterSelect = document.getElementById('theater-select');
+    const theatersGridContainer = document.getElementById('theaters-grid-container');
+    const theatersCountBadge = document.getElementById('theaters-count-badge');
     const theaterBadgeInfo = document.getElementById('theater-badge-info');
     const theaterInfoLocation = document.getElementById('theater-info-location');
     const theaterInfoScreen = document.getElementById('theater-info-screen');
@@ -131,17 +133,44 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 4. Fetch Theaters and populate theater dropdown
+     * 4. Fetch Theaters dynamically from GET /api/theaters
+     * Handles loading, empty, and error states gracefully
      */
     async function fetchTheaters() {
+        if (theatersGridContainer) {
+            theatersGridContainer.innerHTML = `
+                <div class="theater-loading">
+                    <span>🏛️</span> Loading available cinema theaters...
+                </div>
+            `;
+        }
+
         try {
             const response = await fetch('/api/theaters');
             const data = await response.json();
 
             if (response.ok && data.success && Array.isArray(data.theaters)) {
                 theatersList = data.theaters;
-                theaterSelect.innerHTML = '<option value="">-- Select Cinema Theater --</option>';
 
+                if (theatersCountBadge) {
+                    theatersCountBadge.textContent = `${theatersList.length} Theaters Available`;
+                    theatersCountBadge.style.display = 'inline-block';
+                }
+
+                if (theatersList.length === 0) {
+                    if (theatersGridContainer) {
+                        theatersGridContainer.innerHTML = `
+                            <div class="theater-empty">
+                                ⚠️ No cinema theaters found. Theaters added in the Admin Panel will appear here automatically.
+                            </div>
+                        `;
+                    }
+                    theaterSelect.innerHTML = '<option value="">-- No Theaters Available --</option>';
+                    return;
+                }
+
+                // Populate Dropdown
+                theaterSelect.innerHTML = '<option value="">-- Select Cinema Theater --</option>';
                 theatersList.forEach((t) => {
                     const option = document.createElement('option');
                     option.value = t.theater_id;
@@ -149,15 +178,62 @@ document.addEventListener('DOMContentLoaded', async () => {
                     theaterSelect.appendChild(option);
                 });
 
+                // Render Visual Theater Cards
+                renderTheaterCards();
+
                 // Auto-select first theater by default if available
                 if (theatersList.length > 0) {
                     theaterSelect.value = theatersList[0].theater_id;
                     onTheaterChange(theatersList[0].theater_id);
                 }
+            } else {
+                showTheatersError(data.message || 'Failed to load cinema theaters.');
             }
         } catch (err) {
             console.error('[Theaters Init Error]:', err);
+            showTheatersError('Unable to connect to server to load theaters.');
         }
+    }
+
+    /**
+     * Render Interactive Theater Selection Cards
+     */
+    function renderTheaterCards() {
+        if (!theatersGridContainer) return;
+        theatersGridContainer.innerHTML = '';
+
+        theatersList.forEach((t) => {
+            const card = document.createElement('div');
+            card.className = `theater-card ${selectedTheater && selectedTheater.theater_id === t.theater_id ? 'active' : ''}`;
+            card.dataset.id = t.theater_id;
+
+            card.innerHTML = `
+                <div class="theater-card-header">
+                    <span>🏛️</span>
+                    <span class="theater-card-name">${CineBook.escapeHtml(t.theater_name)}</span>
+                </div>
+                <div class="theater-card-location">📍 ${CineBook.escapeHtml(t.location)}</div>
+                <div class="theater-card-screen">${CineBook.escapeHtml(t.screen_name)}</div>
+            `;
+
+            card.addEventListener('click', () => {
+                theaterSelect.value = t.theater_id;
+                onTheaterChange(t.theater_id);
+            });
+
+            theatersGridContainer.appendChild(card);
+        });
+    }
+
+    function showTheatersError(msg) {
+        if (theatersGridContainer) {
+            theatersGridContainer.innerHTML = `
+                <div class="theater-empty" style="color: var(--error-red);">
+                    ⚠️ ${CineBook.escapeHtml(msg)}
+                </div>
+            `;
+        }
+        theaterSelect.innerHTML = '<option value="">-- Failed to Load Theaters --</option>';
     }
 
     /**
@@ -187,6 +263,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     function onTheaterChange(theaterId) {
         selectedTheater = theatersList.find((t) => t.theater_id === parseInt(theaterId)) || null;
         selectedSeats = []; // Reset seat selection when changing theater
+
+        // Synchronize active state across visual theater cards
+        if (theatersGridContainer) {
+            const cards = theatersGridContainer.querySelectorAll('.theater-card');
+            cards.forEach((c) => {
+                c.classList.toggle('active', parseInt(c.dataset.id) === parseInt(theaterId));
+            });
+        }
 
         if (selectedTheater) {
             theaterBadgeInfo.style.display = 'block';
