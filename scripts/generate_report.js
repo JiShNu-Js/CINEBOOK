@@ -180,21 +180,23 @@ async function generateReport() {
                     new Paragraph({
                         heading: HeadingLevel.HEADING_2,
                         spacing: { before: 80, after: 40 },
-                        children: [new TextRun({ text: '3. Explanation of the Five Connected Webpages', bold: true, size: 20, color: '0F172A' })]
+                        children: [new TextRun({ text: '3. Explanation of the Five Connected Webpages & Workflow', bold: true, size: 20, color: '0F172A' })]
                     }),
                     new Paragraph({
                         spacing: { before: 0, after: 60 },
                         children: [
+                            new TextRun({ text: '• Workflow: ', bold: true }),
+                            new TextRun({ text: 'Movie Selection → Theater Selection → Date & Showtime → Seat Matrix → Confirmation Ticket.\n' }),
                             new TextRun({ text: '1. Page 1 – Registration (signup.html): ', bold: true }),
-                            new TextRun({ text: 'Features full name, email, and password validation with regex checks, equality confirmation, and minimum length enforcement. Passwords are salted and hashed with bcrypt on the server before database insertion to prevent duplicate account creation.\n' }),
+                            new TextRun({ text: 'Validates full name, email regex, password strength, and confirmation equality. Stores accounts using salted bcrypt hashes on the server to prevent duplicate email registrations.\n' }),
                             new TextRun({ text: '2. Page 2 – Login (login.html): ', bold: true }),
-                            new TextRun({ text: 'Authenticates user credentials against stored MySQL password hashes. Upon verification, express-session assigns an HTTP-only session cookie (connect.sid) and redirects the user to the movie catalog or their pending booking.\n' }),
+                            new TextRun({ text: 'Authenticates credentials against stored password hashes. Establishes express-session cookie state and redirects users back to their pending booking destination.\n' }),
                             new TextRun({ text: '3. Page 3 – Movie Browsing (movies.html): ', bold: true }),
-                            new TextRun({ text: 'Dynamically fetches movie items from GET /api/movies and constructs DOM cards displaying title, genre, duration, pricing, and posters. Includes real-time search and genre filtering without page reloads.\n' }),
-                            new TextRun({ text: '4. Page 4 – Seat Selection & Booking (booking.html): ', bold: true }),
-                            new TextRun({ text: 'Presents show date and time slot pickers alongside an interactive 5x8 cinema seat grid (Rows A–E, 40 seats). Occupied seats are queried from the backend and disabled. Calculates total price dynamically and revalidates prices on the server.\n' }),
+                            new TextRun({ text: 'Dynamically queries GET /api/movies and constructs DOM cards with titles, genres, durations, and pricing. Features live client-side search and genre filtering without page reloads.\n' }),
+                            new TextRun({ text: '4. Page 4 – Theater & Seat Booking (booking.html): ', bold: true }),
+                            new TextRun({ text: 'Allows selecting cinema theaters dynamically (IMAX Laser, PVR Premiere, Cinepolis 4DX, Royale VIP), show date, showtime, and interactive 5x8 seat grid. Checks theater-specific seat occupancy, prevents duplicate bookings in the same hall, and recalculates totals on the server.\n' }),
                             new TextRun({ text: '5. Page 5 – Ticket Confirmation & Printing (confirmation.html): ', bold: true }),
-                            new TextRun({ text: 'Fetches verified booking data via GET /api/booking/:id with strict user ownership protection. Displays a stylized cinema ticket with barcode simulation and triggers browser printing via JavaScript window.print() formatted with @media print CSS rules.\n' }),
+                            new TextRun({ text: 'Fetches verified booking details from GET /api/booking/:id with ownership protection. Displays cinema ticket with theater name, screen, location, barcode, and triggers browser printing via JavaScript window.print() formatted with @media print rules.\n' }),
                             new TextRun({ text: '6. Module IV Bonus – Admin CRUD (admin.html): ', bold: true }),
                             new TextRun({ text: 'Role-protected dashboard allowing administrators to Create, Read, Update, and Delete movies and monitor bookings.' })
                         ]
@@ -210,14 +212,16 @@ async function generateReport() {
                         spacing: { before: 0, after: 60 },
                         children: [
                             new TextRun({
-                                text: 'The relational database "cinebook" is structured into three normalized tables with foreign key constraints:\n'
+                                text: 'The relational database "cinebook" is structured into four normalized tables with foreign key constraints:\n'
                             }),
                             new TextRun({ text: '• users table: ', bold: true }),
                             new TextRun({ text: 'user_id (INT, PK, AI), name (VARCHAR), email (VARCHAR, UNIQUE), password (VARCHAR, bcrypt hash), role (VARCHAR, default "user").\n' }),
                             new TextRun({ text: '• movies table: ', bold: true }),
                             new TextRun({ text: 'movie_id (INT, PK, AI), title (VARCHAR), description (TEXT), genre (VARCHAR), duration (INT min), price (DECIMAL), poster (VARCHAR).\n' }),
+                            new TextRun({ text: '• theaters table: ', bold: true }),
+                            new TextRun({ text: 'theater_id (INT, PK, AI), theater_name (VARCHAR), location (VARCHAR), screen_name (VARCHAR).\n' }),
                             new TextRun({ text: '• bookings table: ', bold: true }),
-                            new TextRun({ text: 'booking_id (INT, PK, AI), user_id (FK to users), movie_id (FK to movies), show_date (DATE), show_time (VARCHAR), seats (VARCHAR), ticket_count (INT), total_price (DECIMAL), created_at (TIMESTAMP).' })
+                            new TextRun({ text: 'booking_id (INT, PK, AI), user_id (FK to users), movie_id (FK to movies), theater_id (FK to theaters), show_date (DATE), show_time (VARCHAR), seats (VARCHAR), ticket_count (INT), total_price (DECIMAL), created_at (TIMESTAMP).' })
                         ]
                     }),
 

@@ -1,7 +1,8 @@
 /**
  * CineBook - Comprehensive Automated Test Suite
  * Validates all REST API endpoints, business logic, session handling,
- * price recalculation, duplicate seat prevention, ownership checks, and CRUD.
+ * price recalculation, theater selection, theater-specific seat conflicts,
+ * ownership checks, and CRUD.
  */
 
 const http = require('http');
@@ -156,10 +157,28 @@ async function runTests() {
             'Single Movie Details Retrieval (GET /api/movies/:id)');
 
         // -------------------------------------------------------------
-        // TEST 8: Protected Booking - Unauthenticated Access Denied
+        // TEST 8: Theaters List (GET /api/theaters)
+        // -------------------------------------------------------------
+        const theatersRes = await request('GET', '/api/theaters');
+        assert(theatersRes.status === 200 && Array.isArray(theatersRes.body.theaters) && theatersRes.body.theaters.length >= 3,
+            `Theaters List Retrieval (Found ${theatersRes.body.theaters?.length || 0} theaters)`);
+
+        const theater1 = theatersRes.body.theaters[0];
+        const theater2 = theatersRes.body.theaters[1];
+
+        // -------------------------------------------------------------
+        // TEST 9: Single Theater Details (GET /api/theaters/:id)
+        // -------------------------------------------------------------
+        const theaterDetailRes = await request('GET', `/api/theaters/${theater1.theater_id}`);
+        assert(theaterDetailRes.status === 200 && theaterDetailRes.body.theater.theater_name === theater1.theater_name,
+            'Single Theater Details Retrieval (GET /api/theaters/:id)');
+
+        // -------------------------------------------------------------
+        // TEST 10: Protected Booking - Unauthenticated Access Denied
         // -------------------------------------------------------------
         const unauthBookRes = await request('POST', '/api/book', {
             movieId: firstMovie.movie_id,
+            theaterId: theater1.theater_id,
             showDate: '2026-11-05',
             showTime: '06:15 PM',
             seats: ['C3', 'C4']
@@ -167,10 +186,11 @@ async function runTests() {
         assert(unauthBookRes.status === 401, 'Unauthenticated Booking Denied (401 Unauthorized)');
 
         // -------------------------------------------------------------
-        // TEST 9: Authenticated Booking Creation with Server-side Price Calc
+        // TEST 11: Authenticated Booking with Theater Selection & Server Price Calc
         // -------------------------------------------------------------
         const bookRes = await request('POST', '/api/book', {
             movieId: firstMovie.movie_id,
+            theaterId: theater1.theater_id,
             showDate: '2026-11-05',
             showTime: '06:15 PM',
             seats: ['C3', 'C4']
@@ -178,28 +198,48 @@ async function runTests() {
         const bookingId = bookRes.body.bookingId;
         const expectedPrice = parseFloat(firstMovie.price) * 2;
         assert(bookRes.status === 201 && bookRes.body.totalPrice === expectedPrice,
-            `Ticket Booking with Server Price Calculation (Expected: ₹${expectedPrice}, Got: ₹${bookRes.body.totalPrice})`);
+            `Ticket Booking with Theater Selection (Expected: ₹${expectedPrice}, Got: ₹${bookRes.body.totalPrice})`);
 
         // -------------------------------------------------------------
-        // TEST 10: Duplicate Seat Reservation Prevention
+        // TEST 12: Same Theater Duplicate Seat Conflict Detection
         // -------------------------------------------------------------
         const dupSeatRes = await request('POST', '/api/book', {
             movieId: firstMovie.movie_id,
+            theaterId: theater1.theater_id,
             showDate: '2026-11-05',
             showTime: '06:15 PM',
-            seats: ['C4', 'C5'] // C4 was already booked!
+            seats: ['C4', 'C5'] // C4 already booked in Theater 1!
         }, userCookie);
-        assert(dupSeatRes.status === 409, 'Duplicate Seat Conflict Detection (409 Conflict on C4)');
+        assert(dupSeatRes.status === 409, 'Same Theater Duplicate Seat Conflict (409 Conflict on C4 in Theater 1)');
 
         // -------------------------------------------------------------
-        // TEST 11: Confirmation & Ticket Details (GET /api/booking/:id)
+        // TEST 13: Theater-Specific Seat Isolation
+        // Same seat (C4) on same date/time in Theater 2 must SUCCEED!
+        // -------------------------------------------------------------
+        const diffTheaterBookRes = await request('POST', '/api/book', {
+            movieId: firstMovie.movie_id,
+            theaterId: theater2.theater_id, // Different theater!
+            showDate: '2026-11-05',
+            showTime: '06:15 PM',
+            seats: ['C4'] // Allowed because Theater 2 has its own distinct hall
+        }, userCookie);
+        assert(diffTheaterBookRes.status === 201, 'Theater-Specific Seat Isolation (Seat C4 successfully booked in Theater 2)');
+
+        // -------------------------------------------------------------
+        // TEST 14: Confirmation & Ticket Details with Theater Info (GET /api/booking/:id)
         // -------------------------------------------------------------
         const confirmRes = await request('GET', `/api/booking/${bookingId}`, null, userCookie);
-        assert(confirmRes.status === 200 && confirmRes.body.booking.booking_id === bookingId && confirmRes.body.booking.seats.includes('C3'),
-            'Booking Confirmation Retrieval (GET /api/booking/:id)');
+        const confirmedBooking = confirmRes.body.booking;
+        assert(
+            confirmRes.status === 200 &&
+            confirmedBooking.booking_id === bookingId &&
+            confirmedBooking.theater_name === theater1.theater_name &&
+            confirmedBooking.screen_name === theater1.screen_name,
+            `Booking Confirmation Retrieval with Theater Info (${confirmedBooking?.theater_name || 'N/A'})`
+        );
 
         // -------------------------------------------------------------
-        // TEST 12: Booking Ownership Protection
+        // TEST 15: Booking Ownership Protection
         // -------------------------------------------------------------
         // Login as another user (Rahul Sharma: rahul@cinebook.com)
         const rahulLogin = await request('POST', '/api/login', {
@@ -211,7 +251,7 @@ async function runTests() {
         assert(crossUserRes.status === 403, 'Cross-User Booking Access Denied (403 Forbidden)');
 
         // -------------------------------------------------------------
-        // TEST 13: Admin CRUD Operations
+        // TEST 16: Admin CRUD Operations
         // -------------------------------------------------------------
         // Login as Admin
         const adminLogin = await request('POST', '/api/login', {
@@ -248,7 +288,7 @@ async function runTests() {
         assert(deleteMovieRes.status === 200, 'Admin CRUD: DELETE Movie (DELETE /api/admin/movies/:id)');
 
         // -------------------------------------------------------------
-        // TEST 14: User Logout (POST /api/logout)
+        // TEST 17: User Logout (POST /api/logout)
         // -------------------------------------------------------------
         const logoutRes = await request('POST', '/api/logout', null, userCookie);
         const checkAfterLogout = await request('GET', '/api/me', null, userCookie);

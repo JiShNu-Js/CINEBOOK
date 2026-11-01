@@ -116,11 +116,42 @@ const memoryStore = {
             created_at: new Date()
         }
     ],
+    theaters: [
+        {
+            theater_id: 1,
+            theater_name: 'CineBook IMAX Laser',
+            location: 'Phoenix Palladium Mall, Downtown',
+            screen_name: 'Audi 1 (IMAX Laser)',
+            created_at: new Date()
+        },
+        {
+            theater_id: 2,
+            theater_name: 'CineBook PVR Premiere',
+            location: 'Galaxy Galleria, West Avenue',
+            screen_name: 'Audi 2 (Dolby Atmos)',
+            created_at: new Date()
+        },
+        {
+            theater_id: 3,
+            theater_name: 'CineBook Cinepolis 4DX',
+            location: 'Metroplex Plaza, City Center',
+            screen_name: 'Audi 3 (4DX Dynamic)',
+            created_at: new Date()
+        },
+        {
+            theater_id: 4,
+            theater_name: 'CineBook Royale Luxe',
+            location: 'Grand Horizon Mall, North Hills',
+            screen_name: 'Audi VIP (Gold Class)',
+            created_at: new Date()
+        }
+    ],
     bookings: [
         {
             booking_id: 1,
             user_id: 2,
             movie_id: 1,
+            theater_id: 1,
             show_date: new Date().toISOString().split('T')[0],
             show_time: '06:15 PM',
             seats: 'B4, B5',
@@ -131,6 +162,7 @@ const memoryStore = {
     ],
     nextUserId: 3,
     nextMovieId: 7,
+    nextTheaterId: 5,
     nextBookingId: 2
 };
 
@@ -262,23 +294,57 @@ async function query(sql, params = []) {
         return [{ affectedRows: 0 }];
     }
 
-    // 9. Check booked seats for movie, date, time
-    // SELECT seats FROM bookings WHERE movie_id = ? AND show_date = ? AND show_time = ?
-    if (/SELECT seats FROM bookings WHERE movie_id = \? AND show_date = \? AND show_time = \?/i.test(normalized)) {
-        const [movieId, date, time] = params;
+    // 8a. SELECT ... FROM theaters WHERE theater_id = ?
+    if (/SELECT\s+(.*?)\s+FROM\s+theaters\s+WHERE\s+theater_id\s*=\s*\?/i.test(normalized)) {
+        const id = parseInt(params[0]);
+        const rows = memoryStore.theaters.filter(t => t.theater_id === id);
+        return [rows];
+    }
+
+    // 8b. SELECT ... FROM theaters (all theaters)
+    if (/SELECT\s+(.*?)\s+FROM\s+theaters/i.test(normalized) && !/WHERE/i.test(normalized)) {
+        return [[...memoryStore.theaters]];
+    }
+
+    // 9. Check booked seats for movie, theater, date, time
+    // SELECT seats FROM bookings WHERE movie_id = ? AND theater_id = ? AND show_date = ? AND show_time = ?
+    if (/SELECT seats FROM bookings WHERE movie_id = \? AND theater_id = \? AND show_date = \? AND show_time = \?/i.test(normalized)) {
+        const [movieId, theaterId, date, time] = params;
         const rows = memoryStore.bookings
-            .filter(b => b.movie_id === parseInt(movieId) && String(b.show_date).slice(0, 10) === String(date).slice(0, 10) && b.show_time === time)
+            .filter(b => b.movie_id === parseInt(movieId) &&
+                         b.theater_id === parseInt(theaterId) &&
+                         String(b.show_date).slice(0, 10) === String(date).slice(0, 10) &&
+                         b.show_time === time)
             .map(b => ({ seats: b.seats }));
         return [rows];
     }
 
-    // 10. INSERT INTO bookings (user_id, movie_id, show_date, show_time, seats, ticket_count, total_price) VALUES (?, ?, ?, ?, ?, ?, ?)
+    // 9b. Fallback seat check (without theater_id)
+    if (/SELECT seats FROM bookings WHERE movie_id = \? AND show_date = \? AND show_time = \?/i.test(normalized)) {
+        const [movieId, date, time] = params;
+        const rows = memoryStore.bookings
+            .filter(b => b.movie_id === parseInt(movieId) &&
+                         String(b.show_date).slice(0, 10) === String(date).slice(0, 10) &&
+                         b.show_time === time)
+            .map(b => ({ seats: b.seats }));
+        return [rows];
+    }
+
+    // 10. INSERT INTO bookings (with or without theater_id)
     if (/INSERT INTO bookings/i.test(normalized)) {
-        const [user_id, movie_id, show_date, show_time, seats, ticket_count, total_price] = params;
+        let user_id, movie_id, theater_id, show_date, show_time, seats, ticket_count, total_price;
+        if (params.length === 8) {
+            [user_id, movie_id, theater_id, show_date, show_time, seats, ticket_count, total_price] = params;
+        } else {
+            [user_id, movie_id, show_date, show_time, seats, ticket_count, total_price] = params;
+            theater_id = 1;
+        }
+
         const newBooking = {
             booking_id: memoryStore.nextBookingId++,
             user_id: parseInt(user_id),
             movie_id: parseInt(movie_id),
+            theater_id: parseInt(theater_id || 1),
             show_date,
             show_time,
             seats,
@@ -290,13 +356,14 @@ async function query(sql, params = []) {
         return [{ insertId: newBooking.booking_id, affectedRows: 1 }];
     }
 
-    // 11. SELECT b.*, m.title, m.poster, m.genre, m.price, m.duration FROM bookings b JOIN movies m ... WHERE b.booking_id = ? AND b.user_id = ?
-    if (/FROM bookings b JOIN movies m/i.test(normalized) && /b\.booking_id = \?/i.test(normalized)) {
+    // 11. SELECT b.*, m.title, ..., t.theater_name, ... FROM bookings b JOIN movies m ... JOIN theaters t ... WHERE b.booking_id = ? AND b.user_id = ?
+    if (/FROM bookings b/i.test(normalized) && /b\.booking_id = \?/i.test(normalized)) {
         const [bookingId, userId] = params.map(p => parseInt(p));
         const booking = memoryStore.bookings.find(b => b.booking_id === bookingId && (isNaN(userId) || b.user_id === userId));
         if (!booking) return [[]];
         const movie = memoryStore.movies.find(m => m.movie_id === booking.movie_id) || {};
         const user = memoryStore.users.find(u => u.user_id === booking.user_id) || {};
+        const theater = memoryStore.theaters.find(t => t.theater_id === booking.theater_id) || memoryStore.theaters[0];
         return [[{
             ...booking,
             title: movie.title,
@@ -304,40 +371,51 @@ async function query(sql, params = []) {
             genre: movie.genre,
             price: movie.price,
             duration: movie.duration,
+            theater_name: theater.theater_name,
+            theater_location: theater.location,
+            location: theater.location,
+            screen_name: theater.screen_name,
             user_name: user.name,
             user_email: user.email
         }]];
     }
 
-    // 12. SELECT b.*, m.title, m.poster, m.genre FROM bookings b JOIN movies m ... WHERE b.user_id = ?
-    if (/FROM bookings b JOIN movies m/i.test(normalized) && /b\.user_id = \?/i.test(normalized)) {
+    // 12. SELECT b.*, m.title, ..., t.theater_name ... FROM bookings b ... WHERE b.user_id = ?
+    if (/FROM bookings b/i.test(normalized) && /b\.user_id = \?/i.test(normalized)) {
         const userId = parseInt(params[0]);
         const list = memoryStore.bookings
             .filter(b => b.user_id === userId)
             .map(b => {
                 const movie = memoryStore.movies.find(m => m.movie_id === b.movie_id) || {};
+                const theater = memoryStore.theaters.find(t => t.theater_id === b.theater_id) || memoryStore.theaters[0];
                 return {
                     ...b,
                     title: movie.title,
                     poster: movie.poster,
                     genre: movie.genre,
-                    price: movie.price
+                    price: movie.price,
+                    theater_name: theater.theater_name,
+                    theater_location: theater.location,
+                    screen_name: theater.screen_name
                 };
             })
             .sort((a, b) => b.booking_id - a.booking_id);
         return [list];
     }
 
-    // 13. Admin: SELECT b.*, u.name, u.email, m.title FROM bookings b ...
+    // 13. Admin: SELECT b.*, u.name, u.email, m.title, t.theater_name FROM bookings b ...
     if (/FROM bookings b/i.test(normalized)) {
         const list = memoryStore.bookings.map(b => {
             const movie = memoryStore.movies.find(m => m.movie_id === b.movie_id) || {};
             const user = memoryStore.users.find(u => u.user_id === b.user_id) || {};
+            const theater = memoryStore.theaters.find(t => t.theater_id === b.theater_id) || memoryStore.theaters[0];
             return {
                 ...b,
                 title: movie.title,
                 user_name: user.name,
-                user_email: user.email
+                user_email: user.email,
+                theater_name: theater.theater_name,
+                screen_name: theater.screen_name
             };
         }).sort((a, b) => b.booking_id - a.booking_id);
         return [list];

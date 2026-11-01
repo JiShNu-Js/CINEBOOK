@@ -11,6 +11,7 @@ USE cinebook;
 
 -- 2. Drop existing tables if needed (in proper foreign key dependency order)
 DROP TABLE IF EXISTS bookings;
+DROP TABLE IF EXISTS theaters;
 DROP TABLE IF EXISTS movies;
 DROP TABLE IF EXISTS users;
 
@@ -43,13 +44,26 @@ CREATE TABLE movies (
 );
 
 -- ========================================================
--- TABLE 3: bookings
+-- TABLE 3: theaters
+-- Stores cinema theater complexes and screen specifications
+-- ========================================================
+CREATE TABLE theaters (
+    theater_id INT AUTO_INCREMENT PRIMARY KEY,
+    theater_name VARCHAR(150) NOT NULL,
+    location VARCHAR(200) NOT NULL,
+    screen_name VARCHAR(100) NOT NULL,
+    created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+);
+
+-- ========================================================
+-- TABLE 4: bookings
 -- Stores ticket reservations made by authenticated users
 -- ========================================================
 CREATE TABLE bookings (
     booking_id INT AUTO_INCREMENT PRIMARY KEY,
     user_id INT NOT NULL,
     movie_id INT NOT NULL,
+    theater_id INT NOT NULL,
     show_date DATE NOT NULL,
     show_time VARCHAR(20) NOT NULL,
     seats VARCHAR(255) NOT NULL, -- Comma-separated seat codes, e.g. 'A1, A2'
@@ -57,12 +71,13 @@ CREATE TABLE bookings (
     total_price DECIMAL(10, 2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     CONSTRAINT fk_booking_user FOREIGN KEY (user_id) REFERENCES users(user_id) ON DELETE CASCADE,
-    CONSTRAINT fk_booking_movie FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE
+    CONSTRAINT fk_booking_movie FOREIGN KEY (movie_id) REFERENCES movies(movie_id) ON DELETE CASCADE,
+    CONSTRAINT fk_booking_theater FOREIGN KEY (theater_id) REFERENCES theaters(theater_id) ON DELETE CASCADE
 );
 
 -- ========================================================
 -- SEED DATA
--- Default sample accounts and movie listings for initial use
+-- Default sample accounts, movie listings, and theaters
 -- ========================================================
 
 -- Seed Users:
@@ -72,8 +87,14 @@ INSERT INTO users (name, email, password, role) VALUES
 ('System Administrator', 'admin@cinebook.com', '$2b$10$i76FWNQbRsl4JSEiZ5xDC.115uJWZu4FJLy6yicmoa5o2PmAXLSZ.', 'admin'),
 ('Rahul Sharma', 'rahul@cinebook.com', '$2b$10$5dw0EGa2i7MAEvg2GJoSFO/M9Ql/azE3A9FFArhGE0VKeEyU5eW.q', 'user');
 
+-- Seed Theaters:
+INSERT INTO theaters (theater_name, location, screen_name) VALUES
+('CineBook IMAX Laser', 'Phoenix Palladium Mall, Downtown', 'Audi 1 (IMAX Laser)'),
+('CineBook PVR Premiere', 'Galaxy Galleria, West Avenue', 'Audi 2 (Dolby Atmos)'),
+('CineBook Cinepolis 4DX', 'Metroplex Plaza, City Center', 'Audi 3 (4DX Dynamic)'),
+('CineBook Royale Luxe', 'Grand Horizon Mall, North Hills', 'Audi VIP (Gold Class)');
+
 -- Seed Movies:
--- At least 6 diverse popular movies with attractive metadata and local SVG poster references
 INSERT INTO movies (title, description, genre, duration, price, poster) VALUES
 (
     'Inception',
@@ -125,6 +146,6 @@ INSERT INTO movies (title, description, genre, duration, price, poster) VALUES
 );
 
 -- Seed Bookings:
--- 1 sample booking for Rahul Sharma (user_id = 2) for Inception (movie_id = 1)
-INSERT INTO bookings (user_id, movie_id, show_date, show_time, seats, ticket_count, total_price) VALUES
-(2, 1, CURDATE(), '06:15 PM', 'B4, B5', 2, 500.00);
+-- 1 sample booking for Rahul Sharma (user_id = 2) for Inception (movie_id = 1) at CineBook IMAX Laser (theater_id = 1)
+INSERT INTO bookings (user_id, movie_id, theater_id, show_date, show_time, seats, ticket_count, total_price) VALUES
+(2, 1, 1, CURDATE(), '06:15 PM', 'B4, B5', 2, 500.00);

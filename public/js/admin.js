@@ -142,7 +142,10 @@ document.addEventListener('DOMContentLoaded', async () => {
                     <strong>${CineBook.escapeHtml(b.user_name || 'Customer')}</strong><br>
                     <small style="color: var(--text-dim);">${CineBook.escapeHtml(b.user_email || '')}</small>
                 </td>
-                <td>${CineBook.escapeHtml(b.title || 'Movie')}</td>
+                <td>
+                    <strong>${CineBook.escapeHtml(b.title || 'Movie')}</strong><br>
+                    <small style="color: var(--accent-gold);">🎬 ${CineBook.escapeHtml(b.theater_name || 'Theater')} (${CineBook.escapeHtml(b.screen_name || 'Screen')})</small>
+                </td>
                 <td>${dateStr} @ ${b.show_time}</td>
                 <td><span style="color: var(--primary-red); font-weight: 600;">${b.seats}</span> (${b.ticket_count})</td>
                 <td style="color: var(--accent-gold); font-weight: 700;">${CineBook.formatCurrency(b.total_price)}</td>

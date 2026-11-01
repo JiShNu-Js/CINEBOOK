@@ -15,6 +15,7 @@ const db = require('./config/db');
 // Route imports
 const authRoutes = require('./routes/auth');
 const movieRoutes = require('./routes/movies');
+const theaterRoutes = require('./routes/theaters');
 const bookingRoutes = require('./routes/bookings');
 const adminRoutes = require('./routes/admin');
 
@@ -51,6 +52,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 // -------------------------------------------------------------
 app.use('/api', authRoutes);
 app.use('/api/movies', movieRoutes);
+app.use('/api/theaters', theaterRoutes);
 app.use('/api', bookingRoutes);
 app.use('/api/admin', adminRoutes);
 

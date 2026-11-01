@@ -38,7 +38,7 @@
         <div class="booking-container">
             <!-- Left Side: Selection Form & Interactive Seat Grid -->
             <div class="booking-panel">
-                <h2 class="section-title">1. Select Movie & Showtime</h2>
+                <h2 class="section-title">1. Select Movie & Cinema Theater</h2>
 
                 <!-- Status alert container -->
                 <div id="booking-alert"></div>
@@ -51,6 +51,19 @@
                             <option value="">-- Choose a Movie --</option>
                         </select>
                     </div>
+
+                    <!-- Theater Selection Dropdown -->
+                    <div class="form-group">
+                        <label for="theater-select">Choose Cinema Theater</label>
+                        <select id="theater-select" class="form-control" required>
+                            <option value="">-- Select Cinema Theater --</option>
+                        </select>
+                        <div id="theater-badge-info" style="margin-top: 0.5rem; font-size: 0.85rem; color: var(--accent-gold); display: none;">
+                            📍 <span id="theater-info-location"></span> • 🎬 <span id="theater-info-screen"></span>
+                        </div>
+                    </div>
+
+                    <h2 class="section-title" style="margin-top: 2rem;">2. Select Date & Showtime</h2>
 
                     <!-- Date Selection -->
                     <div class="form-group">
@@ -70,7 +83,7 @@
                     </div>
 
                     <!-- Seat Layout Section -->
-                    <h2 class="section-title" style="margin-top: 2rem;">2. Select Your Seats</h2>
+                    <h2 class="section-title" style="margin-top: 2rem;">3. Select Your Seats</h2>
                     
                     <div class="screen-container">
                         <div class="screen-visual"></div>
@@ -111,7 +124,18 @@
                         <img id="summary-poster-img" src="/images/inception.svg" alt="Movie Poster">
                     </div>
 
-                    <h4 id="summary-movie-title" style="font-size: 1.1rem; margin-bottom: 0.8rem; color: #ffffff;">Select a Movie</h4>
+                    <h4 id="summary-movie-title" style="font-size: 1.1rem; margin-bottom: 0.4rem; color: #ffffff;">Select a Movie</h4>
+                    <p id="summary-theater-name" style="font-size: 0.88rem; color: var(--accent-gold); font-weight: 600; margin-bottom: 0.8rem;">Select Theater</p>
+
+                    <div class="summary-line">
+                        <span>Theater:</span>
+                        <strong id="summary-theater">--</strong>
+                    </div>
+
+                    <div class="summary-line">
+                        <span>Screen:</span>
+                        <strong id="summary-screen">--</strong>
+                    </div>
 
                     <div class="summary-line">
                         <span>Show Date:</span>

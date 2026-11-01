@@ -74,12 +74,13 @@ router.get('/:id', async (req, res) => {
 
 /**
  * GET /api/movies/:id/booked-seats
- * Returns list of already booked seats for a particular movie, date, and showtime
+ * Returns list of already booked seats for a particular movie, theater, date, and showtime
  */
 router.get('/:id/booked-seats', async (req, res) => {
     try {
         const movieId = parseInt(req.params.id);
-        const { date, time } = req.query;
+        const { date, time, theaterId, theater_id } = req.query;
+        const targetTheaterId = parseInt(theaterId || theater_id);
 
         if (!movieId || !date || !time) {
             return res.status(400).json({
@@ -88,10 +89,20 @@ router.get('/:id/booked-seats', async (req, res) => {
             });
         }
 
-        const [rows] = await db.query(
-            'SELECT seats FROM bookings WHERE movie_id = ? AND show_date = ? AND show_time = ?',
-            [movieId, date, time]
-        );
+        let sql;
+        let queryParams;
+
+        if (targetTheaterId && !isNaN(targetTheaterId)) {
+            // Theater-specific occupied seat checking
+            sql = 'SELECT seats FROM bookings WHERE movie_id = ? AND theater_id = ? AND show_date = ? AND show_time = ?';
+            queryParams = [movieId, targetTheaterId, date, time];
+        } else {
+            // Backward-compatible query without theater filter
+            sql = 'SELECT seats FROM bookings WHERE movie_id = ? AND show_date = ? AND show_time = ?';
+            queryParams = [movieId, date, time];
+        }
+
+        const [rows] = await db.query(sql, queryParams);
 
         // Aggregate booked seats into a single flat array
         const bookedSeats = [];
@@ -106,6 +117,7 @@ router.get('/:id/booked-seats', async (req, res) => {
 
         return res.json({
             success: true,
+            theaterId: targetTheaterId || null,
             bookedSeats
         });
     } catch (err) {

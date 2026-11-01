@@ -14,11 +14,15 @@ const { isAuthenticated } = require('../middleware/auth');
 /**
  * POST /api/book
  * Reserve movie tickets. Protected: Must be logged in.
+ * Workflow: Movie -> Theater -> Date -> Showtime -> Seats -> Confirmation.
  */
 router.post('/book', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
-        let { movieId, showDate, showTime, seats } = req.body;
+        let { movieId, theaterId, theater_id, showDate, showTime, seats } = req.body;
+
+        // Support both theaterId and theater_id
+        const parsedTheaterId = parseInt(theaterId || theater_id) || 1;
 
         // 1. Validate required inputs
         if (!movieId || !showDate || !showTime || !seats) {
@@ -33,6 +37,19 @@ router.post('/book', isAuthenticated, async (req, res) => {
             return res.status(400).json({
                 success: false,
                 message: 'Invalid movie ID.'
+            });
+        }
+
+        // Validate theater exists
+        const [theaterRows] = await db.query(
+            'SELECT theater_id, theater_name, screen_name FROM theaters WHERE theater_id = ?',
+            [parsedTheaterId]
+        );
+
+        if (!theaterRows || theaterRows.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: 'Selected cinema theater does not exist.'
             });
         }
 
@@ -74,10 +91,10 @@ router.post('/book', isAuthenticated, async (req, res) => {
         // Security check: Recalculate price on the server, NEVER trust client total
         const serverCalculatedTotal = parseFloat((unitPrice * ticketCount).toFixed(2));
 
-        // 3. Prevent duplicate seat reservation for the same movie, date, and showtime
+        // 3. Prevent duplicate seat reservation for the specific movie + theater + date + showtime
         const [existingBookings] = await db.query(
-            'SELECT seats FROM bookings WHERE movie_id = ? AND show_date = ? AND show_time = ?',
-            [parsedMovieId, showDate, showTime]
+            'SELECT seats FROM bookings WHERE movie_id = ? AND theater_id = ? AND show_date = ? AND show_time = ?',
+            [parsedMovieId, parsedTheaterId, showDate, showTime]
         );
 
         const occupiedSeats = new Set();
@@ -93,20 +110,21 @@ router.post('/book', isAuthenticated, async (req, res) => {
         if (conflictSeats.length > 0) {
             return res.status(409).json({
                 success: false,
-                message: `Sorry, seat(s) ${conflictSeats.join(', ')} have already been reserved. Please select alternative seats.`
+                message: `Sorry, seat(s) ${conflictSeats.join(', ')} have already been reserved in this theater for the selected showtime. Please select alternative seats.`
             });
         }
 
-        // 4. Save booking in MySQL database
+        // 4. Save booking in MySQL database including theater_id
         const [result] = await db.query(
-            'INSERT INTO bookings (user_id, movie_id, show_date, show_time, seats, ticket_count, total_price) VALUES (?, ?, ?, ?, ?, ?, ?)',
-            [userId, parsedMovieId, showDate, showTime, seatsString, ticketCount, serverCalculatedTotal]
+            'INSERT INTO bookings (user_id, movie_id, theater_id, show_date, show_time, seats, ticket_count, total_price) VALUES (?, ?, ?, ?, ?, ?, ?, ?)',
+            [userId, parsedMovieId, parsedTheaterId, showDate, showTime, seatsString, ticketCount, serverCalculatedTotal]
         );
 
         return res.status(201).json({
             success: true,
             message: 'Booking confirmed successfully!',
             bookingId: result.insertId,
+            theaterId: parsedTheaterId,
             totalPrice: serverCalculatedTotal
         });
     } catch (err) {
@@ -126,10 +144,12 @@ router.get('/my-bookings', isAuthenticated, async (req, res) => {
     try {
         const userId = req.session.user.id;
         const [bookings] = await db.query(
-            `SELECT b.booking_id, b.movie_id, b.show_date, b.show_time, b.seats, b.ticket_count, b.total_price, b.created_at,
-                    m.title, m.poster, m.genre
+            `SELECT b.booking_id, b.movie_id, b.theater_id, b.show_date, b.show_time, b.seats, b.ticket_count, b.total_price, b.created_at,
+                    m.title, m.poster, m.genre,
+                    t.theater_name, t.location AS theater_location, t.screen_name
              FROM bookings b
              JOIN movies m ON b.movie_id = m.movie_id
+             LEFT JOIN theaters t ON b.theater_id = t.theater_id
              WHERE b.user_id = ?
              ORDER BY b.booking_id DESC`,
             [userId]
@@ -165,13 +185,15 @@ router.get('/booking/:id', isAuthenticated, async (req, res) => {
             });
         }
 
-        // Query booking details with joined movie and user info
+        // Query booking details with joined movie, theater, and user info
         const [rows] = await db.query(
-            `SELECT b.booking_id, b.user_id, b.movie_id, b.show_date, b.show_time, b.seats, b.ticket_count, b.total_price, b.created_at,
+            `SELECT b.booking_id, b.user_id, b.movie_id, b.theater_id, b.show_date, b.show_time, b.seats, b.ticket_count, b.total_price, b.created_at,
                     m.title, m.poster, m.genre, m.price, m.duration,
+                    t.theater_name, t.location AS theater_location, t.screen_name,
                     u.name AS user_name, u.email AS user_email
              FROM bookings b
              JOIN movies m ON b.movie_id = m.movie_id
+             LEFT JOIN theaters t ON b.theater_id = t.theater_id
              JOIN users u ON b.user_id = u.user_id
              WHERE b.booking_id = ?`,
             [bookingId]

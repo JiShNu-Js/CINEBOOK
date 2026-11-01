@@ -125,9 +125,10 @@ router.get('/bookings', async (req, res) => {
     try {
         const [bookings] = await db.query(
             `SELECT b.booking_id, b.show_date, b.show_time, b.seats, b.ticket_count, b.total_price, b.created_at,
-                    m.title, u.name AS user_name, u.email AS user_email
+                    m.title, t.theater_name, t.screen_name, u.name AS user_name, u.email AS user_email
              FROM bookings b
              JOIN movies m ON b.movie_id = m.movie_id
+             LEFT JOIN theaters t ON b.theater_id = t.theater_id
              JOIN users u ON b.user_id = u.user_id
              ORDER BY b.booking_id DESC`
         );

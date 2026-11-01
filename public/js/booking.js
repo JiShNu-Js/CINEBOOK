@@ -1,14 +1,18 @@
 /**
- * CineBook - Page 4: Booking & Seat Selection Script
+ * CineBook - Page 4: Booking & Seat Selection Script (with Theater Selection)
  * Responsible: Group Member 4
  * Syllabus Concepts: DOM Manipulation, Interactive Seat Grid, Dynamic Price Calculation,
  * Event Delegation, Server-side Revalidation, Session Verification
+ *
+ * Booking Workflow: Movie -> Theater -> Date -> Showtime -> Seats -> Confirmation
  */
 
 document.addEventListener('DOMContentLoaded', async () => {
     // State variables
     let moviesList = [];
+    let theatersList = [];
     let selectedMovie = null;
+    let selectedTheater = null;
     let selectedDate = '';
     let selectedTime = '02:00 PM';
     let selectedSeats = [];
@@ -17,15 +21,22 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     // DOM Elements
     const movieSelect = document.getElementById('movie-select');
+    const theaterSelect = document.getElementById('theater-select');
+    const theaterBadgeInfo = document.getElementById('theater-badge-info');
+    const theaterInfoLocation = document.getElementById('theater-info-location');
+    const theaterInfoScreen = document.getElementById('theater-info-screen');
     const dateInput = document.getElementById('show-date');
     const slotButtons = document.querySelectorAll('.slot-btn');
     const seatMapContainer = document.getElementById('seat-map');
     const confirmBtn = document.getElementById('btn-confirm-booking');
     const authBanner = document.getElementById('auth-status-banner');
 
-    // Summary Elements
+    // Summary Card Elements
     const summaryPosterImg = document.getElementById('summary-poster-img');
     const summaryMovieTitle = document.getElementById('summary-movie-title');
+    const summaryTheaterName = document.getElementById('summary-theater-name');
+    const summaryTheater = document.getElementById('summary-theater');
+    const summaryScreen = document.getElementById('summary-screen');
     const summaryDate = document.getElementById('summary-date');
     const summaryTime = document.getElementById('summary-time');
     const summarySeats = document.getElementById('summary-seats');
@@ -88,7 +99,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     /**
      * 3. Fetch Movies and populate select dropdown
      */
-    async function fetchMoviesAndInit() {
+    async function fetchMovies() {
         try {
             const response = await fetch('/api/movies');
             const data = await response.json();
@@ -120,7 +131,37 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 4. Handle Movie Selection
+     * 4. Fetch Theaters and populate theater dropdown
+     */
+    async function fetchTheaters() {
+        try {
+            const response = await fetch('/api/theaters');
+            const data = await response.json();
+
+            if (response.ok && data.success && Array.isArray(data.theaters)) {
+                theatersList = data.theaters;
+                theaterSelect.innerHTML = '<option value="">-- Select Cinema Theater --</option>';
+
+                theatersList.forEach((t) => {
+                    const option = document.createElement('option');
+                    option.value = t.theater_id;
+                    option.textContent = `${t.theater_name} (${t.location})`;
+                    theaterSelect.appendChild(option);
+                });
+
+                // Auto-select first theater by default if available
+                if (theatersList.length > 0) {
+                    theaterSelect.value = theatersList[0].theater_id;
+                    onTheaterChange(theatersList[0].theater_id);
+                }
+            }
+        } catch (err) {
+            console.error('[Theaters Init Error]:', err);
+        }
+    }
+
+    /**
+     * 5. Handle Movie Selection
      */
     function onMovieChange(movieId) {
         selectedMovie = moviesList.find((m) => m.movie_id === parseInt(movieId)) || null;
@@ -134,20 +175,54 @@ document.addEventListener('DOMContentLoaded', async () => {
         } else {
             summaryMovieTitle.textContent = 'Select a Movie';
             summaryUnitPrice.textContent = '₹0.00';
-            seatMapContainer.innerHTML = '<p style="color: #64748b; padding: 2rem;">Please choose a movie above to view available seats.</p>';
+            seatMapContainer.innerHTML = '<p style="color: #64748b; padding: 2rem;">Please choose a movie and theater above to view available seats.</p>';
         }
 
         updatePriceCalculation();
     }
 
     /**
-     * 5. Query already booked seats from backend and render the seat grid
+     * 6. Handle Theater Selection
+     */
+    function onTheaterChange(theaterId) {
+        selectedTheater = theatersList.find((t) => t.theater_id === parseInt(theaterId)) || null;
+        selectedSeats = []; // Reset seat selection when changing theater
+
+        if (selectedTheater) {
+            theaterBadgeInfo.style.display = 'block';
+            theaterInfoLocation.textContent = selectedTheater.location;
+            theaterInfoScreen.textContent = selectedTheater.screen_name;
+
+            summaryTheaterName.textContent = selectedTheater.theater_name;
+            summaryTheater.textContent = selectedTheater.theater_name;
+            summaryScreen.textContent = selectedTheater.screen_name;
+
+            fetchBookedSeatsAndRender();
+        } else {
+            theaterBadgeInfo.style.display = 'none';
+            summaryTheaterName.textContent = 'Select Theater';
+            summaryTheater.textContent = '--';
+            summaryScreen.textContent = '--';
+            seatMapContainer.innerHTML = '<p style="color: #64748b; padding: 2rem;">Please choose a cinema theater above to view available seats.</p>';
+        }
+
+        updatePriceCalculation();
+    }
+
+    /**
+     * 7. Query theater-specific booked seats from backend and render the seat grid
      */
     async function fetchBookedSeatsAndRender() {
-        if (!selectedMovie || !selectedDate || !selectedTime) return;
+        if (!selectedMovie || !selectedTheater || !selectedDate || !selectedTime) {
+            if (!selectedMovie || !selectedTheater) {
+                seatMapContainer.innerHTML = '<p style="color: #64748b; padding: 2rem;">Please choose both a movie and a theater above to view available seats.</p>';
+            }
+            return;
+        }
 
         try {
-            const res = await fetch(`/api/movies/${selectedMovie.movie_id}/booked-seats?date=${selectedDate}&time=${encodeURIComponent(selectedTime)}`);
+            const url = `/api/movies/${selectedMovie.movie_id}/booked-seats?theaterId=${selectedTheater.theater_id}&date=${selectedDate}&time=${encodeURIComponent(selectedTime)}`;
+            const res = await fetch(url);
             const data = await res.json();
 
             bookedSeats = new Set();
@@ -164,8 +239,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 6. Render the 5x8 Seat Matrix (Rows A to E, Seats 1 to 8 = 40 seats)
-     * Demonstrates DOM creation and Event delegation
+     * 8. Render the 5x8 Seat Matrix (Rows A to E, Seats 1 to 8 = 40 seats)
      */
     function renderSeatGrid() {
         seatMapContainer.innerHTML = '';
@@ -192,7 +266,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
                 if (bookedSeats.has(seatCode)) {
                     seatDiv.classList.add('booked');
-                    seatDiv.title = `Seat ${seatCode} is already booked`;
+                    seatDiv.title = `Seat ${seatCode} is already booked in ${selectedTheater ? selectedTheater.theater_name : 'this theater'}`;
                 } else {
                     if (selectedSeats.includes(seatCode)) {
                         seatDiv.classList.add('selected');
@@ -209,7 +283,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 7. Toggle Seat Selection
+     * 9. Toggle Seat Selection
      */
     function toggleSeatSelection(seatCode, seatElement) {
         if (seatElement.classList.contains('booked')) return;
@@ -229,8 +303,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 8. Dynamic Price Calculation (JavaScript DOM updates)
-     * Demonstrates: Unit Price * Quantity, Currency Formatting
+     * 10. Dynamic Price Calculation
      */
     function updatePriceCalculation() {
         const count = selectedSeats.length;
@@ -238,7 +311,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         summaryCount.textContent = count;
 
         let total = 0;
-        if (selectedMovie && count > 0) {
+        if (selectedMovie && selectedTheater && count > 0) {
             total = count * parseFloat(selectedMovie.price);
             confirmBtn.disabled = false;
         } else {
@@ -249,10 +322,14 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     /**
-     * 9. Event Listeners for Controls
+     * 11. Event Listeners for Controls
      */
     movieSelect.addEventListener('change', (e) => {
         onMovieChange(e.target.value);
+    });
+
+    theaterSelect.addEventListener('change', (e) => {
+        onTheaterChange(e.target.value);
     });
 
     dateInput.addEventListener('change', (e) => {
@@ -272,7 +349,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     });
 
     /**
-     * 10. Booking Submission to Backend API
+     * 12. Booking Submission to Backend API
      */
     confirmBtn.addEventListener('click', async () => {
         CineBook.clearAlert('booking-alert');
@@ -287,6 +364,10 @@ document.addEventListener('DOMContentLoaded', async () => {
         // Validate form inputs
         if (!selectedMovie) {
             CineBook.showAlert('booking-alert', 'Please select a movie.', 'danger');
+            return;
+        }
+        if (!selectedTheater) {
+            CineBook.showAlert('booking-alert', 'Please select a cinema theater.', 'danger');
             return;
         }
         if (!selectedDate) {
@@ -309,6 +390,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 },
                 body: JSON.stringify({
                     movieId: selectedMovie.movie_id,
+                    theaterId: selectedTheater.theater_id,
                     showDate: selectedDate,
                     showTime: selectedTime,
                     seats: selectedSeats
@@ -338,5 +420,6 @@ document.addEventListener('DOMContentLoaded', async () => {
     // Boot sequence
     setupDateSelector();
     await checkUserAuth();
-    await fetchMoviesAndInit();
+    await fetchTheaters();
+    await fetchMovies();
 });
